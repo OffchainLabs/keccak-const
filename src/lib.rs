@@ -1,4 +1,4 @@
-// #![no_std]
+#![no_std]
 
 const LANE_DIAM: usize = 5;
 
@@ -64,11 +64,9 @@ const fn keccak<
     if RATE + CAPACITY != 1600 {
         panic!();
     }
-
     if RATE % 8 != 0 {
         panic!("Rate needs to be a multiple of 8");
     }
-
     let mut output = [0; OUTPUT_BYTES_LEN];
     let mut state = [0; STATE_WIDTH];
     let rate_in_bytes = RATE / 8;
@@ -162,7 +160,6 @@ const fn keccak_f1600_on_lanes(lanes: Lanes) -> Lanes {
             C[x] = lanes[x][0] ^ lanes[x][1] ^ lanes[x][2] ^ lanes[x][3] ^ lanes[x][4];
             x += 1;
         }
-
         let mut x = 0;
         let mut D = [064; LANE_DIAM];
         while x < LANE_DIAM {
@@ -173,7 +170,6 @@ const fn keccak_f1600_on_lanes(lanes: Lanes) -> Lanes {
             }
             x += 1;
         }
-
         let mut x = 0;
         while x < LANE_DIAM {
             let mut y = 0;
@@ -183,7 +179,6 @@ const fn keccak_f1600_on_lanes(lanes: Lanes) -> Lanes {
             }
             x += 1;
         }
-
         // ρ and π
         let mut x = 1;
         let mut y = 0;
@@ -194,7 +189,6 @@ const fn keccak_f1600_on_lanes(lanes: Lanes) -> Lanes {
             (current, lanes[x][y]) = (lanes[x][y], ROL64(current, (t + 1) * (t + 2) / 2));
             t += 1;
         }
-
         // χ
         let mut y = 0;
         while y < LANE_DIAM {
@@ -211,7 +205,6 @@ const fn keccak_f1600_on_lanes(lanes: Lanes) -> Lanes {
             }
             y += 1;
         }
-
         // ι
         let mut j = 0;
         while j < 7 {
@@ -221,10 +214,8 @@ const fn keccak_f1600_on_lanes(lanes: Lanes) -> Lanes {
             }
             j += 1;
         }
-
         round += 1;
     }
-
     lanes
 }
 
