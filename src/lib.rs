@@ -188,10 +188,32 @@ const fn keccak<
     output
 }
 
-pub fn SHAKE256<const INPUT_LEN: usize, const OUTPUT_LEN: usize>(
+pub const fn SHAKE128<const INPUT_LEN: usize, const OUTPUT_LEN: usize>(
+    input: [u8; INPUT_LEN],
+) -> [u8; OUTPUT_LEN] {
+    keccak::<1344, 256, INPUT_LEN, OUTPUT_LEN>(input, 0x1F)
+}
+
+pub const fn SHAKE256<const INPUT_LEN: usize, const OUTPUT_LEN: usize>(
     input: [u8; INPUT_LEN],
 ) -> [u8; OUTPUT_LEN] {
     keccak::<1088, 512, INPUT_LEN, OUTPUT_LEN>(input, 0x1F)
+}
+
+pub const fn SHA3_224<const INPUT_LEN: usize>(input: [u8; INPUT_LEN]) -> [u8; 28] {
+    keccak::<1152, 448, INPUT_LEN, 28>(input, 0x06)
+}
+
+pub const fn SHA3_256<const INPUT_LEN: usize>(input: [u8; INPUT_LEN]) -> [u8; 32] {
+    keccak::<1088, 512, INPUT_LEN, 32>(input, 0x06)
+}
+
+pub const fn SHA3_384<const INPUT_LEN: usize>(input: [u8; INPUT_LEN]) -> [u8; 48] {
+    keccak::<832, 768, INPUT_LEN, 48>(input, 0x06)
+}
+
+pub const fn SHA3_512<const INPUT_LEN: usize>(input: [u8; INPUT_LEN]) -> [u8; 64] {
+    keccak::<576, 1024, INPUT_LEN, 64>(input, 0x06)
 }
 
 #[cfg(test)]
