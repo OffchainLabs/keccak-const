@@ -18,16 +18,21 @@ macro_rules! sha3 {
         impl $name {
             const OUTPUT_BYTES_LEN: usize = $security / 8;
 
+            /// Constructs a new hasher.
             pub const fn new() -> $name {
                 $name {
                     state: KeccakState::new($security, 0x06),
                 }
             }
 
+            /// Absorbs additional input.
+            ///
+            /// Can be called multiple times.
             pub const fn update(&mut self, input: &[u8]) {
                 self.state.update(input);
             }
 
+            /// Pads and squeezes the state to the output.
             pub const fn finish(&self) -> [u8; Self::OUTPUT_BYTES_LEN] {
                 self.state.finish()
             }
@@ -70,16 +75,21 @@ macro_rules! shake {
         }
 
         impl $name {
+            /// Constructs a new hasher.
             pub const fn new() -> $name {
                 $name {
                     state: KeccakState::new($security, 0x1f),
                 }
             }
 
+            /// Absorbs additional input.
+            ///
+            /// Can be called multiple times.
             pub const fn update(&mut self, input: &[u8]) {
                 self.state.update(input);
             }
 
+            /// Pads and squeezes the state to the output.
             pub const fn finish<const N: usize>(&self) -> [u8; N] {
                 self.state.finish()
             }
