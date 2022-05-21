@@ -98,13 +98,13 @@ macro_rules! shake {
 }
 
 shake!(
-    /// The `SHAKE128` hash function.
+    /// The `SHAKE128` extendable-output function.
     Shake128,
     128,
 );
 
 shake!(
-    /// The `SHAKE256` hash function.
+    /// The `SHAKE256` extendable-output function.
     Shake256,
     256,
 );
