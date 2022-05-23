@@ -1,4 +1,5 @@
 //! Tests from https://github.com/emn178/js-sha3/blob/master/tests/test-shake.js
+#![feature(const_mut_refs)]
 
 use sha3_const::Shake128;
 use sha3_const::Shake256;
@@ -24,8 +25,9 @@ fn shake128_empty_string_with_32_byte_output() {
 
 #[test]
 fn shake128_quick_brown_fox_with_32_byte_output() {
-    let hasher = Shake128::new().update(b"The quick brown fox jumps over the lazy dog");
-    let output = hasher.finalize();
+    let output = Shake128::new()
+        .update(b"The quick brown fox jumps over the lazy dog")
+        .finalize();
 
     assert_eq!(
         [
@@ -44,12 +46,9 @@ fn shake128_empty_string_with_single_byte_output() {
 
 #[test]
 fn shake128_quick_brown_fox_with_single_byte_output() {
-    let mut output = [0; 1];
-
-    Shake128::new()
+    let mut output = Shake128::new()
         .update(b"The quick brown fox jumps over the lazy dog")
-        .finalize_xof()
-        .read(&mut output);
+        .finalize();
 
     assert_eq!([0xf4], output);
 }

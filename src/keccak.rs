@@ -6,6 +6,8 @@ const STATE_WIDTH: usize = 200;
 
 type State = [u8; STATE_WIDTH];
 
+/// Extendable-output function reader
+#[derive(Clone)]
 pub struct XofReader {
     state: State,
     pos: usize,
@@ -13,6 +15,7 @@ pub struct XofReader {
 }
 
 impl XofReader {
+    /// Reads output to a buffer
     pub const fn read(&mut self, buffer: &mut [u8]) {
         let mut i = 0;
         while i < buffer.len() {
@@ -27,6 +30,7 @@ impl XofReader {
     }
 }
 
+#[derive(Clone)]
 pub struct KeccakState {
     rate_in_bytes: usize,
     state: State,
@@ -71,7 +75,7 @@ impl KeccakState {
         } = *self;
         // pad and switch to the squeezing phase
         state[pos] ^= delimiter;
-        if delimiter & 0x80 != 0 && pos % rate_in_bytes == rate_in_bytes - 1 {
+        if delimiter & 0x80 != 0 && pos == rate_in_bytes - 1 {
             keccak_f1600(&mut state);
         }
         state[rate_in_bytes - 1] ^= 0x80;
