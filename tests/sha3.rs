@@ -1,28 +1,26 @@
 //! Tests from https://github.com/emn178/js-sha3/blob/master/tests/test.js
 
-use sha3_const::{Sha3_224, Sha3_256, Sha3_384, Sha3_512};
+use sha3_const::Sha3_224;
+use sha3_const::Sha3_256;
+use sha3_const::Sha3_384;
+use sha3_const::Sha3_512;
 
 #[test]
 fn sha3_224_empty_string() {
-    let hasher = Sha3_224::new();
-
-    let output = hasher.finalize();
-
     assert_eq!(
         [
             0x6b, 0x4e, 0x03, 0x42, 0x36, 0x67, 0xdb, 0xb7, 0x3b, 0x6e, 0x15, 0x45, 0x4f, 0x0e,
             0xb1, 0xab, 0xd4, 0x59, 0x7f, 0x9a, 0x1b, 0x07, 0x8e, 0x3f, 0x5b, 0x5a, 0x6b, 0xc7
         ],
-        output,
+        Sha3_224::new().finalize(),
     );
 }
 
 #[test]
 fn sha3_224_ascii() {
-    let mut hasher = Sha3_224::new();
-
-    hasher.update(b"The quick brown fox jumps over the lazy dog");
-    let output = hasher.finalize();
+    let output = Sha3_224::new()
+        .update(b"The quick brown fox jumps over the lazy dog")
+        .finalize();
 
     assert_eq!(
         [
@@ -35,11 +33,9 @@ fn sha3_224_ascii() {
 
 #[test]
 fn sha3_224_utf8() {
-    let mut hasher = Sha3_224::new();
-    let input = "訊息摘要演算法第五版（英語：Message-Digest Algorithm 5，縮寫為MD5），是當前電腦領域用於確保資訊傳輸完整一致而廣泛使用的雜湊演算法之一".as_bytes();
-
-    hasher.update(input);
-    let output = hasher.finalize();
+    let output = Sha3_224::new()
+        .update("訊息摘要演算法第五版（英語：Message-Digest Algorithm 5，縮寫為MD5），是當前電腦領域用於確保資訊傳輸完整一致而廣泛使用的雜湊演算法之一".as_bytes())
+        .finalize();
 
     assert_eq!(
         [
@@ -52,11 +48,10 @@ fn sha3_224_utf8() {
 
 #[test]
 fn sha3_224_updates() {
-    let mut hasher = Sha3_224::new();
-
-    hasher.update("訊息摘要演算法第五版（英語：Message-Digest Algorithm 5，縮寫為MD5），是當前電腦領域用於確保資訊傳輸".as_bytes());
-    hasher.update("完整一致而廣泛使用的雜湊演算法之一（又譯雜湊演算法、摘要演算法等），主流程式語言普遍已有MD5的實作。".as_bytes());
-    let output = hasher.finalize();
+    let output = Sha3_224::new()
+        .update("訊息摘要演算法第五版（英語：Message-Digest Algorithm 5，縮寫為MD5），是當前電腦領域用於確保資訊傳輸".as_bytes())
+        .update("完整一致而廣泛使用的雜湊演算法之一（又譯雜湊演算法、摘要演算法等），主流程式語言普遍已有MD5的實作。".as_bytes())
+        .finalize();
 
     assert_eq!(
         [
@@ -69,26 +64,21 @@ fn sha3_224_updates() {
 
 #[test]
 fn sha3_256_empty_string() {
-    let hasher = Sha3_256::new();
-
-    let output = hasher.finalize();
-
     assert_eq!(
         [
             0xa7, 0xff, 0xc6, 0xf8, 0xbf, 0x1e, 0xd7, 0x66, 0x51, 0xc1, 0x47, 0x56, 0xa0, 0x61,
             0xd6, 0x62, 0xf5, 0x80, 0xff, 0x4d, 0xe4, 0x3b, 0x49, 0xfa, 0x82, 0xd8, 0x0a, 0x4b,
             0x80, 0xf8, 0x43, 0x4a
         ],
-        output,
+        Sha3_256::new().finalize(),
     );
 }
 
 #[test]
 fn sha3_256_ascii() {
-    let mut hasher = Sha3_256::new();
-
-    hasher.update(b"The quick brown fox jumps over the lazy dog");
-    let output = hasher.finalize();
+    let output = Sha3_256::new()
+        .update(b"The quick brown fox jumps over the lazy dog")
+        .finalize();
 
     assert_eq!(
         [
@@ -102,11 +92,9 @@ fn sha3_256_ascii() {
 
 #[test]
 fn sha3_256_utf8() {
-    let mut hasher = Sha3_256::new();
-    let input = "訊息摘要演算法第五版（英語：Message-Digest Algorithm 5，縮寫為MD5），是當前電腦領域用於確保資訊傳輸完整一致而廣泛使用的雜湊演算法之一".as_bytes();
-
-    hasher.update(input);
-    let output = hasher.finalize();
+    let output = Sha3_256::new()
+        .update("訊息摘要演算法第五版（英語：Message-Digest Algorithm 5，縮寫為MD5），是當前電腦領域用於確保資訊傳輸完整一致而廣泛使用的雜湊演算法之一".as_bytes())
+        .finalize();
 
     assert_eq!(
         [
@@ -120,11 +108,10 @@ fn sha3_256_utf8() {
 
 #[test]
 fn sha3_256_updates() {
-    let mut hasher = Sha3_256::new();
-
-    hasher.update("訊息摘要演算法第五版（英語：Message-Digest Algorithm 5，縮寫為MD5），是當前電腦領域用於確保資訊傳輸".as_bytes());
-    hasher.update("完整一致而廣泛使用的雜湊演算法之一（又譯雜湊演算法、摘要演算法等），主流程式語言普遍已有MD5的實作。".as_bytes());
-    let output = hasher.finalize();
+    let output = Sha3_256::new()
+        .update("訊息摘要演算法第五版（英語：Message-Digest Algorithm 5，縮寫為MD5），是當前電腦領域用於確保資訊傳輸".as_bytes())
+        .update("完整一致而廣泛使用的雜湊演算法之一（又譯雜湊演算法、摘要演算法等），主流程式語言普遍已有MD5的實作。".as_bytes())
+        .finalize();
 
     assert_eq!(
         [
@@ -155,10 +142,9 @@ fn sha3_384_empty_string() {
 
 #[test]
 fn sha3_384_ascii() {
-    let mut hasher = Sha3_384::new();
-
-    hasher.update(b"The quick brown fox jumps over the lazy dog");
-    let output = hasher.finalize();
+    let output = Sha3_384::new()
+        .update(b"The quick brown fox jumps over the lazy dog")
+        .finalize();
 
     assert_eq!(
         [
@@ -173,11 +159,9 @@ fn sha3_384_ascii() {
 
 #[test]
 fn sha3_384_utf8() {
-    let mut hasher = Sha3_384::new();
-    let input = "訊息摘要演算法第五版（英語：Message-Digest Algorithm 5，縮寫為MD5），是當前電腦領域用於確保資訊傳輸完整一致而廣泛使用的雜湊演算法之一".as_bytes();
-
-    hasher.update(input);
-    let output = hasher.finalize();
+    let output = Sha3_384::new()
+        .update("訊息摘要演算法第五版（英語：Message-Digest Algorithm 5，縮寫為MD5），是當前電腦領域用於確保資訊傳輸完整一致而廣泛使用的雜湊演算法之一".as_bytes())
+        .finalize();
 
     assert_eq!(
         [
@@ -192,11 +176,10 @@ fn sha3_384_utf8() {
 
 #[test]
 fn sha3_384_updates() {
-    let mut hasher = Sha3_384::new();
-
-    hasher.update("訊息摘要演算法第五版（英語：Message-Digest Algorithm 5，縮寫為MD5），是當前電腦領域用於確保資訊傳輸".as_bytes());
-    hasher.update("完整一致而廣泛使用的雜湊演算法之一（又譯雜湊演算法、摘要演算法等），主流程式語言普遍已有MD5的實作。".as_bytes());
-    let output = hasher.finalize();
+    let output = Sha3_384::new()
+        .update("訊息摘要演算法第五版（英語：Message-Digest Algorithm 5，縮寫為MD5），是當前電腦領域用於確保資訊傳輸".as_bytes())
+        .update("完整一致而廣泛使用的雜湊演算法之一（又譯雜湊演算法、摘要演算法等），主流程式語言普遍已有MD5的實作。".as_bytes())
+        .finalize();
 
     assert_eq!(
         [
@@ -229,10 +212,9 @@ fn sha3_512_empty_string() {
 
 #[test]
 fn sha3_512_ascii() {
-    let mut hasher = Sha3_512::new();
-
-    hasher.update(b"The quick brown fox jumps over the lazy dog");
-    let output = hasher.finalize();
+    let output = Sha3_512::new()
+        .update(b"The quick brown fox jumps over the lazy dog")
+        .finalize();
 
     assert_eq!(
         [
@@ -248,11 +230,9 @@ fn sha3_512_ascii() {
 
 #[test]
 fn sha3_512_utf8() {
-    let mut hasher = Sha3_512::new();
-    let input = "訊息摘要演算法第五版（英語：Message-Digest Algorithm 5，縮寫為MD5），是當前電腦領域用於確保資訊傳輸完整一致而廣泛使用的雜湊演算法之一".as_bytes();
-
-    hasher.update(input);
-    let output = hasher.finalize();
+    let output = Sha3_512::new()
+        .update("訊息摘要演算法第五版（英語：Message-Digest Algorithm 5，縮寫為MD5），是當前電腦領域用於確保資訊傳輸完整一致而廣泛使用的雜湊演算法之一".as_bytes())
+        .finalize();
 
     assert_eq!(
         [
@@ -268,11 +248,10 @@ fn sha3_512_utf8() {
 
 #[test]
 fn sha3_512_updates() {
-    let mut hasher = Sha3_512::new();
-
-    hasher.update("訊息摘要演算法第五版（英語：Message-Digest Algorithm 5，縮寫為MD5），是當前電腦領域用於確保資訊傳輸".as_bytes());
-    hasher.update("完整一致而廣泛使用的雜湊演算法之一（又譯雜湊演算法、摘要演算法等），主流程式語言普遍已有MD5的實作。".as_bytes());
-    let output = hasher.finalize();
+    let output = Sha3_512::new()
+        .update("訊息摘要演算法第五版（英語：Message-Digest Algorithm 5，縮寫為MD5），是當前電腦領域用於確保資訊傳輸".as_bytes())
+        .update("完整一致而廣泛使用的雜湊演算法之一（又譯雜湊演算法、摘要演算法等），主流程式語言普遍已有MD5的實作。".as_bytes())
+        .finalize();
 
     assert_eq!(
         [

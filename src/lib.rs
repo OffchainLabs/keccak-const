@@ -1,5 +1,24 @@
+//! `const fn` implementation of the SHA-3 family of hash and extendable-output
+//! functions.
+//!
+//! This crate allows you to use the SHA-3 hash and extendable-output functions
+//! as constant expressions in Rust. For all other usages, the [sha3](https://crates.io/crates/sha3)
+//! crate includes more
+//! optimized implementations of these hash functions.
+//!
+//! # Example
+//!
+//! ```rust
+//! # use sha3_const::Shake256;
+//! const PSEUDO_RANDOM_BYTES: [u8; 1000] = {
+//!     let mut shake = Shake256::new()
+//!         .update(b":)")
+//!         .finalize();
+//! };
+//! ```
+
 #![feature(const_mut_refs)]
-// #![no_std]
+#![no_std]
 
 mod keccak;
 
@@ -27,15 +46,16 @@ macro_rules! sha3 {
             /// Absorbs additional input
             ///
             /// Can be called multiple times
-            pub const fn update(&mut self, input: &[u8]) {
+            pub const fn update(mut self, input: &[u8]) -> Self {
                 self.state.update(input);
+                self
             }
 
             /// Pads and squeezes the state to the output
             pub const fn finalize(&self) -> [u8; {$security / 8}] {
-                let mut xof_reader = self.state.finalize();
+                let mut reader = self.state.finalize();
                 let mut output = [0; {$security / 8}];
-                xof_reader.read(&mut output);
+                reader.read(&mut output);
                 output
             }
         }
@@ -86,14 +106,25 @@ macro_rules! shake {
 
             /// Absorbs additional input
             ///
-            /// Can be called multiple times
-            pub const fn update(&mut self, input: &[u8]) {
+            /// Can be called multiple times.
+            ///
+            /// Takes `mut self` instead of `&mut self` because mutable references are not allowed in constants.
+            pub const fn update(mut self, input: &[u8]) -> Self {
                 self.state.update(input);
+                self
             }
 
             /// Retrieves an extendable-output function (XOF) reader for current hasher instance
             pub const fn finalize_xof(&self) -> XofReader {
                 self.state.finalize()
+            }
+
+            /// Finalizes the context and compute the output
+            pub const fn finalize<const N: usize>(&self) -> [u8; N] {
+                let mut reader = self.finalize_xof();
+                let mut output = [0; N];
+                reader.read(&mut output);
+                output
             }
         }
 

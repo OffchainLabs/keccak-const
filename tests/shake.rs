@@ -1,76 +1,72 @@
 //! Tests from https://github.com/emn178/js-sha3/blob/master/tests/test-shake.js
 
-use sha3_const::{Shake128, Shake256};
+use sha3_const::Shake128;
+use sha3_const::Shake256;
 
 #[test]
 fn shake128_empty_string_with_32_byte_output() {
     let hasher = Shake128::new();
     let mut output = [0; 32];
-
-    hasher.finalize_xof().read(&mut output);
+    let mut reader = hasher.finalize_xof();
+    reader.read(&mut output[..10]);
+    reader.read(&mut output[10..]);
 
     assert_eq!(
         [
             0x7f, 0x9c, 0x2b, 0xa4, 0xe8, 0x8f, 0x82, 0x7d, 0x61, 0x60, 0x45, 0x50, 0x76, 0x05,
             0x85, 0x3e, 0xd7, 0x3b, 0x80, 0x93, 0xf6, 0xef, 0xbc, 0x88, 0xeb, 0x1a, 0x6e, 0xac,
-            0xfa, 0x66, 0xef, 0x26
+            0xfa, 0x66, 0xef, 0x26,
         ],
-        output,
+        output
     );
+    assert_eq!(output, hasher.finalize());
 }
 
 #[test]
 fn shake128_quick_brown_fox_with_32_byte_output() {
-    let mut hasher = Shake128::new();
-    let mut output = [0; 32];
-
-    hasher.update(b"The quick brown fox jumps over the lazy dog");
-    hasher.finalize_xof().read(&mut output);
+    let hasher = Shake128::new().update(b"The quick brown fox jumps over the lazy dog");
+    let output = hasher.finalize();
 
     assert_eq!(
         [
             0xf4, 0x20, 0x2e, 0x3c, 0x58, 0x52, 0xf9, 0x18, 0x2a, 0x04, 0x30, 0xfd, 0x81, 0x44,
             0xf0, 0xa7, 0x4b, 0x95, 0xe7, 0x41, 0x7e, 0xca, 0xe1, 0x7d, 0xb0, 0xf8, 0xcf, 0xee,
-            0xd0, 0xe3, 0xe6, 0x6e
+            0xd0, 0xe3, 0xe6, 0x6e,
         ],
-        output,
+        output
     );
 }
 
 #[test]
 fn shake128_empty_string_with_single_byte_output() {
-    let hasher = Shake128::new();
-    let mut output = [0; 1];
-
-    hasher.finalize_xof().read(&mut output);
-
-    assert_eq!([0x7f], output);
+    assert_eq!([0x7f], Shake128::new().finalize());
 }
 
 #[test]
 fn shake128_quick_brown_fox_with_single_byte_output() {
-    let mut hasher = Shake128::new();
     let mut output = [0; 1];
 
-    hasher.update(b"The quick brown fox jumps over the lazy dog");
-    hasher.finalize_xof().read(&mut output);
+    Shake128::new()
+        .update(b"The quick brown fox jumps over the lazy dog")
+        .finalize_xof()
+        .read(&mut output);
 
     assert_eq!([0xf4], output);
 }
 
 #[test]
 fn shake128_updates() {
-    let mut hasher = Shake128::new();
     let mut beginning_output = [0; 32];
     let mut end_output = [0; 32];
 
-    hasher.update(b"");
+    let mut hasher = Shake128::new().update(b"");
     hasher.finalize_xof().read(&mut beginning_output);
-    hasher.update(b"The quick ");
-    hasher.update(b"brown fox ");
-    hasher.update(b"jumps over ");
-    hasher.update(b"");
-    hasher.update(b"the lazy dog");
+    hasher = hasher
+        .update(b"The quick ")
+        .update(b"brown fox ")
+        .update(b"jumps over ")
+        .update(b"")
+        .update(b"the lazy dog");
     hasher.finalize_xof().read(&mut end_output);
 
     assert_eq!(
@@ -93,10 +89,9 @@ fn shake128_updates() {
 
 #[test]
 fn shake128_with_172_byte_output() {
-    let mut hasher = Shake128::new();
     let mut output = [0; 172];
 
-    hasher.update(b"AAA");
+    let hasher = Shake128::new().update(b"AAA");
     hasher.finalize_xof().read(&mut output);
 
     assert_eq!(
@@ -121,21 +116,11 @@ fn shake128_with_172_byte_output() {
 
 #[test]
 fn shake256_empty_string_with_single_byte_output() {
-    let hasher = Shake256::new();
-    let mut output = [0; 1];
-
-    hasher.finalize_xof().read(&mut output);
-
-    assert_eq!([0x46], output);
+    assert_eq!([0x46], Shake256::new().finalize());
 }
 
 #[test]
 fn shake256_empty_string_with_512_byte_output() {
-    let hasher = Shake256::new();
-    let mut output = [0; 512];
-
-    hasher.finalize_xof().read(&mut output);
-
     assert_eq!(
         [
             0x46, 0xb9, 0xdd, 0x2b, 0x0b, 0xa8, 0x8d, 0x13, 0x23, 0x3b, 0x3f, 0xeb, 0x74, 0x3e,
@@ -176,16 +161,14 @@ fn shake256_empty_string_with_512_byte_output() {
             0x58, 0x77, 0xb0, 0xc2, 0x8a, 0x9b, 0x1f, 0xd1, 0x66, 0xc7, 0x96, 0xb9, 0xcc, 0x25,
             0x8a, 0x06, 0x4a, 0x8f, 0x57, 0xe2, 0x7f, 0x2a
         ],
-        output,
+        Shake256::new().finalize(),
     );
 }
 
 #[test]
 fn shake256_large_input_with_512_byte_output() {
-    let mut hasher = Shake256::new();
     let mut output = [0; 512];
-
-    hasher.update(&[
+    let hasher = Shake256::new().update(&[
         0x3A, 0x3A, 0x81, 0x9C, 0x48, 0xEF, 0xDE, 0x2A, 0xD9, 0x14, 0xFB, 0xF0, 0x0E, 0x18, 0xAB,
         0x6B, 0xC4, 0xF1, 0x45, 0x13, 0xAB, 0x27, 0xD0, 0xC1, 0x78, 0xA1, 0x88, 0xB6, 0x14, 0x31,
         0xE7, 0xF5, 0x62, 0x3C, 0xB6, 0x6B, 0x23, 0x34, 0x67, 0x75, 0xD3, 0x86, 0xB5, 0x0E, 0x98,
@@ -204,7 +187,8 @@ fn shake256_large_input_with_512_byte_output() {
         0x72, 0xE3, 0x28, 0x80, 0x7C, 0x02, 0xD0, 0x11, 0xFF, 0xBF, 0x33, 0x78, 0x53, 0x78, 0xD7,
         0x9D, 0xC2, 0x66, 0xF6, 0xA5, 0xBE, 0x6B, 0xB0, 0xE4, 0xA9, 0x2E, 0xCE, 0xEB, 0xAE, 0xB1,
     ]);
-    hasher.finalize_xof().read(&mut output);
+    hasher.finalize_xof().read(&mut output[..202]);
+    hasher.finalize_xof().read(&mut output[202..]);
 
     assert_eq!(
         [

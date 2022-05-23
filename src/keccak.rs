@@ -28,7 +28,6 @@ impl XofReader {
 }
 
 pub struct KeccakState {
-    /// rate in bytes
     rate_in_bytes: usize,
     state: State,
     pos: usize,
@@ -45,7 +44,9 @@ impl KeccakState {
         }
     }
 
-    /// Absorb additional input. Can be called multiple times.
+    /// Absorbs additional input
+    ///
+    /// Can be called multiple times
     pub const fn update(&mut self, input: &[u8]) {
         let mut i = 0;
         while i < input.len() {
@@ -59,7 +60,7 @@ impl KeccakState {
         }
     }
 
-    /// Pad and squeeze the state to the output.
+    /// Pad and squeeze the state to the output
     pub const fn finalize(&self) -> XofReader {
         let Self {
             mut state,
