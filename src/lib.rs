@@ -28,9 +28,9 @@
 //!
 //!     let mut i = 0;
 //!     while i < 8 {
-//!         let mut buffer = [0; 16];
-//!         reader.read(&mut buffer);
-//!         output[i] = u128::from_be_bytes(buffer);
+//!         let mut buf = [0; 16];
+//!         reader.read(&mut buf);
+//!         output[i] = u128::from_be_bytes(buf);
 //!         i += 1;
 //!     }
 //!
@@ -286,9 +286,9 @@ shake!(
     ///     let mut output = [0; ROUND_CONSTANTS_LEN];
     ///     let mut i = 0;
     ///     while i < ROUND_CONSTANTS_LEN {
-    ///         let mut buffer = [0; 16];
-    ///         reader.read(&mut buffer);
-    ///         output[i] = u128::from_be_bytes(buffer);
+    ///         let mut buf = [0; 16];
+    ///         reader.read(&mut buf);
+    ///         output[i] = u128::from_be_bytes(buf);
     ///         i += 1;
     ///     }
     ///     output
@@ -356,9 +356,9 @@ shake!(
     ///     let mut output = [0; ROUND_CONSTANTS_LEN];
     ///     let mut i = 0;
     ///     while i < ROUND_CONSTANTS_LEN {
-    ///         let mut buffer = [0; 16];
-    ///         reader.read(&mut buffer);
-    ///         output[i] = u128::from_be_bytes(buffer);
+    ///         let mut buf = [0; 16];
+    ///         reader.read(&mut buf);
+    ///         output[i] = u128::from_be_bytes(buf);
     ///         i += 1;
     ///     }
     ///     output

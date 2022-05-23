@@ -16,10 +16,10 @@ pub struct XofReader {
 
 impl XofReader {
     /// Reads output to a buffer
-    pub const fn read(&mut self, buffer: &mut [u8]) {
+    pub const fn read(&mut self, buf: &mut [u8]) {
         let mut i = 0;
-        while i < buffer.len() {
-            buffer[i] = self.state[self.pos];
+        while i < buf.len() {
+            buf[i] = self.state[self.pos];
             i += 1;
             self.pos += 1;
             if self.pos == self.rate_in_bytes {
@@ -95,13 +95,13 @@ const fn keccak_f1600(state: &mut State) {
         let mut y = 0;
         while y < LANE_DIAM {
             let start = 8 * (x + LANE_DIAM * y);
-            let mut buffer = [0; 8];
+            let mut buf = [0; 8];
             let mut z = 0;
-            while z < buffer.len() {
-                buffer[z] = state[start + z];
+            while z < buf.len() {
+                buf[z] = state[start + z];
                 z += 1;
             }
-            lanes[x][y] = u64::from_le_bytes(buffer);
+            lanes[x][y] = u64::from_le_bytes(buf);
             y += 1;
         }
         x += 1;
@@ -112,11 +112,11 @@ const fn keccak_f1600(state: &mut State) {
     while x < LANE_DIAM {
         let mut y = 0;
         while y < LANE_DIAM {
-            let buffer = lanes[x][y].to_le_bytes();
+            let buf = lanes[x][y].to_le_bytes();
             let start = 8 * (x + LANE_DIAM * y);
             let mut z = 0;
-            while z < buffer.len() {
-                state[start + z] = buffer[z];
+            while z < buf.len() {
+                state[start + z] = buf[z];
                 z += 1;
             }
             y += 1;
