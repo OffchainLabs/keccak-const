@@ -4,6 +4,7 @@
 mod keccak;
 
 use keccak::KeccakState;
+use keccak::XofReader;
 
 macro_rules! sha3 {
     (
@@ -16,51 +17,52 @@ macro_rules! sha3 {
         }
 
         impl $name {
-            const OUTPUT_BYTES_LEN: usize = $security / 8;
-
-            /// Constructs a new hasher.
+            /// Constructs a new hasher
             pub const fn new() -> $name {
                 $name {
                     state: KeccakState::new($security, 0x06),
                 }
             }
 
-            /// Absorbs additional input.
+            /// Absorbs additional input
             ///
-            /// Can be called multiple times.
+            /// Can be called multiple times
             pub const fn update(&mut self, input: &[u8]) {
                 self.state.update(input);
             }
 
-            /// Pads and squeezes the state to the output.
-            pub const fn finish(&self) -> [u8; Self::OUTPUT_BYTES_LEN] {
-                self.state.finish()
+            /// Pads and squeezes the state to the output
+            pub const fn finalize(&self) -> [u8; {$security / 8}] {
+                let mut xof_reader = self.state.finalize();
+                let mut output = [0; {$security / 8}];
+                xof_reader.read(&mut output);
+                output
             }
         }
     };
 }
 
 sha3!(
-    /// The `SHA3-224` hash function.
-    Sha224,
+    /// The `SHA3-224` hash function
+    Sha3_224,
     224,
 );
 
 sha3!(
-    /// The `SHA3-256` hash function.
-    Sha256,
+    /// The `SHA3-256` hash function
+    Sha3_256,
     256,
 );
 
 sha3!(
-    /// The `SHA3-384` hash function.
-    Sha384,
+    /// The `SHA3-384` hash function
+    Sha3_384,
     384,
 );
 
 sha3!(
-    /// The `SHA3-512` hash function.
-    Sha512,
+    /// The `SHA3-512` hash function
+    Sha3_512,
     512,
 );
 
@@ -75,46 +77,42 @@ macro_rules! shake {
         }
 
         impl $name {
-            /// Constructs a new hasher.
+            /// Constructs a new hasher
             pub const fn new() -> $name {
                 $name {
                     state: KeccakState::new($security, 0x1f),
                 }
             }
 
-            /// Absorbs additional input.
+            /// Absorbs additional input
             ///
-            /// Can be called multiple times.
+            /// Can be called multiple times
             pub const fn update(&mut self, input: &[u8]) {
                 self.state.update(input);
             }
 
-            /// Pads and squeezes the state to the output.
-            pub const fn finish<const N: usize>(&self) -> [u8; N] {
-                self.state.finish()
+            /// Retrieves an extendable-output function (XOF) reader for current hasher instance
+            pub const fn finalize_xof(&self) -> XofReader {
+                self.state.finalize()
+            }
+        }
+
+        impl Default for $name {
+            fn default() -> Self {
+                $name::new()
             }
         }
     };
 }
 
 shake!(
-    /// The `SHAKE128` extendable-output function.
+    /// The `SHAKE128` extendable-output function
     Shake128,
     128,
 );
 
 shake!(
-    /// The `SHAKE256` extendable-output function.
+    /// The `SHAKE256` extendable-output function
     Shake256,
     256,
 );
-
-#[test]
-fn shake_works() {
-    let mut hasher = Shake256::new();
-    hasher.update(b"Rescue-XLIX");
-
-    let result = hasher.finish();
-
-    assert_eq!([192, 33, 251, 3, 222, 123, 6, 0, 132, 72], result);
-}
