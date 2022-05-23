@@ -16,7 +16,7 @@ impl XofReader {
     pub const fn read(&mut self, buffer: &mut [u8]) {
         let mut i = 0;
         while i < buffer.len() {
-            buffer[i] += self.state[self.pos];
+            buffer[i] = self.state[self.pos];
             i += 1;
             self.pos += 1;
             if self.pos == self.rate_in_bytes {

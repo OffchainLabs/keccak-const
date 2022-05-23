@@ -2,3 +2,10 @@
 name = "sha3-const"
 version = "0.1.0"
 edition = "2021"
+authors = ["Andrew Milson <andrew.j.milson@gmail.com>"]
+description = "const fn implementation of the SHA-3 family of hash and extendable-output functions"
+homepage = "https://github.com/saleemrashid/sha2-const"
+repository = "https://github.com/saleemrashid/sha2-const"
+license = "MIT OR Apache-2.0"
+keywords = ["crypto"]
+categories = ["cryptography", "no-std"]

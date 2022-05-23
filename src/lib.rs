@@ -10,11 +10,10 @@
 //!
 //! ```rust
 //! # use sha3_const::Shake256;
-//! const PSEUDO_RANDOM_BYTES: [u8; 1000] = {
-//!     let mut shake = Shake256::new()
+//! const PSEUDO_RANDOM_BYTES: [u8; 1000] = Shake256::new()
 //!         .update(b":)")
+//!         .update(b";)")
 //!         .finalize();
-//! };
 //! ```
 
 #![feature(const_mut_refs)]
