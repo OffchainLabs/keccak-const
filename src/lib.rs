@@ -82,9 +82,9 @@ macro_rules! sha3 {
             /// Absorbs additional input
             ///
             /// Can be called multiple times
-            ///
-            /// Takes `mut self` instead of `&mut self` because mutable references are unstable in constants.
             pub const fn update(mut self, input: &[u8]) -> Self {
+                // usee `mut self` instead of `&mut self` because
+                // mutable references are unstable in constants.
                 self.state.update(input);
                 self
             }
@@ -223,9 +223,9 @@ macro_rules! shake {
             /// Absorbs additional input
             ///
             /// Can be called multiple times.
-            ///
-            /// Takes `mut self` instead of `&mut self` because mutable references are unstable in constants.
             pub const fn update(mut self, input: &[u8]) -> Self {
+                // usee `mut self` instead of `&mut self` because
+                // mutable references are unstable in constants.
                 self.state.update(input);
                 self
             }

@@ -46,7 +46,7 @@ fn shake128_empty_string_with_single_byte_output() {
 
 #[test]
 fn shake128_quick_brown_fox_with_single_byte_output() {
-    let mut output = Shake128::new()
+    let output = Shake128::new()
         .update(b"The quick brown fox jumps over the lazy dog")
         .finalize();
 
