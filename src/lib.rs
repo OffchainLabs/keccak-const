@@ -60,10 +60,14 @@ mod keccak;
 use keccak::KeccakState;
 use keccak::XofReader;
 
+const PADDING_SHA3: u8 = 0x06;
+const PADDING_KECCAK: u8 = 0x01;
+
 macro_rules! sha3 {
     (
         $(#[$doc:meta])* $name:ident,
         $security:literal,
+        $padding:expr,
     ) => {
         $(#[$doc])*
         #[derive(Clone)]
@@ -75,7 +79,7 @@ macro_rules! sha3 {
             /// Constructs a new hasher
             pub const fn new() -> $name {
                 $name {
-                    state: KeccakState::new($security, 0x06),
+                    state: KeccakState::new($security, $padding),
                 }
             }
 
@@ -122,6 +126,7 @@ sha3!(
     /// ```
     Sha3_224,
     224,
+    PADDING_SHA3,
 );
 
 sha3!(
@@ -147,6 +152,7 @@ sha3!(
     /// ```
     Sha3_256,
     256,
+    PADDING_SHA3,
 );
 
 sha3!(
@@ -173,6 +179,7 @@ sha3!(
     /// ```
     Sha3_384,
     384,
+    PADDING_SHA3,
 );
 
 sha3!(
@@ -200,6 +207,113 @@ sha3!(
     /// ```
     Sha3_512,
     512,
+    PADDING_SHA3,
+);
+
+sha3!(
+    /// The `KECCAK-224` hash function
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use sha3_const::Keccak224;
+    /// const DIGEST: [u8; 28] = Keccak224::new()
+    ///     .update(b"The quick brown fox ")
+    ///     .update(b"jumps over the lazy dog")
+    ///     .finalize();
+    ///
+    /// assert_eq!(
+    ///     [
+    ///         0x31, 0x0a, 0xee, 0x6b, 0x30, 0xc4, 0x73, 0x50, 0x57, 0x6a, 0xc2, 0x87, 0x3f, 0xa8,
+    ///         0x9f, 0xd1, 0x90, 0xcd, 0xc4, 0x88, 0x44, 0x2f, 0x3e, 0xf6, 0x54, 0xcf, 0x23, 0xfe
+    ///     ],
+    ///     DIGEST,
+    /// );
+    /// ```
+    Keccak224,
+    224,
+    PADDING_KECCAK,
+);
+
+sha3!(
+    /// The `KECCAK-256` hash function
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use sha3_const::Keccak256;
+    /// const DIGEST: [u8; 32] = Keccak256::new()
+    ///     .update(b"The quick brown fox ")
+    ///     .update(b"jumps over the lazy dog")
+    ///     .finalize();
+    ///
+    /// assert_eq!(
+    ///     [
+    ///         0x4d, 0x74, 0x1b, 0x6f, 0x1e, 0xb2, 0x9c, 0xb2, 0xa9, 0xb9, 0x91, 0x1c, 0x82, 0xf5,
+    ///         0x6f, 0xa8, 0xd7, 0x3b, 0x04, 0x95, 0x9d, 0x3d, 0x9d, 0x22, 0x28, 0x95, 0xdf, 0x6c,
+    ///         0x0b, 0x28, 0xaa, 0x15
+    ///     ],
+    ///     DIGEST,
+    /// );
+    /// ```
+    Keccak256,
+    256,
+    PADDING_KECCAK,
+);
+
+sha3!(
+    /// The `KECCAK-384` hash function
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use sha3_const::Keccak384;
+    /// const DIGEST: [u8; 48] = Keccak384::new()
+    ///     .update(b"The quick brown fox ")
+    ///     .update(b"jumps over the lazy dog")
+    ///     .finalize();
+    ///
+    /// assert_eq!(
+    ///     [
+    ///         0x28, 0x39, 0x90, 0xfa, 0x9d, 0x5f, 0xb7, 0x31, 0xd7, 0x86, 0xc5, 0xbb, 0xee, 0x94,
+    ///         0xea, 0x4d, 0xb4, 0x91, 0x0f, 0x18, 0xc6, 0x2c, 0x03, 0xd1, 0x73, 0xfc, 0x0a, 0x5e,
+    ///         0x49, 0x44, 0x22, 0xe8, 0xa0, 0xb3, 0xda, 0x75, 0x74, 0xda, 0xe7, 0xfa, 0x0b, 0xaf,
+    ///         0x00, 0x5e, 0x50, 0x40, 0x63, 0xb3
+    ///     ],
+    ///     DIGEST,
+    /// );
+    /// ```
+    Keccak384,
+    384,
+    PADDING_KECCAK,
+);
+
+sha3!(
+    /// The `KECCAK-512` hash function
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use sha3_const::Keccak512;
+    /// const DIGEST: [u8; 64] = Keccak512::new()
+    ///     .update(b"The quick brown fox ")
+    ///     .update(b"jumps over the lazy dog")
+    ///     .finalize();
+    ///
+    /// assert_eq!(
+    ///     [
+    ///         0xd1, 0x35, 0xbb, 0x84, 0xd0, 0x43, 0x9d, 0xba, 0xc4, 0x32, 0x24, 0x7e, 0xe5, 0x73,
+    ///         0xa2, 0x3e, 0xa7, 0xd3, 0xc9, 0xde, 0xb2, 0xa9, 0x68, 0xeb, 0x31, 0xd4, 0x7c, 0x4f,
+    ///         0xb4, 0x5f, 0x1e, 0xf4, 0x42, 0x2d, 0x6c, 0x53, 0x1b, 0x5b, 0x9b, 0xd6, 0xf4, 0x49,
+    ///         0xeb, 0xcc, 0x44, 0x9e, 0xa9, 0x4d, 0x0a, 0x8f, 0x05, 0xf6, 0x21, 0x30, 0xfd, 0xa6,
+    ///         0x12, 0xda, 0x53, 0xc7, 0x96, 0x59, 0xf6, 0x09
+    ///     ],
+    ///     DIGEST,
+    /// );
+    /// ```
+    Keccak512,
+    512,
+    PADDING_KECCAK,
 );
 
 macro_rules! shake {
