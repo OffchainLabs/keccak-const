@@ -1,7 +1,7 @@
 //! Tests from https://github.com/emn178/js-sha3/blob/master/tests/test-shake.js
 
-use keccak_const::Shake128;
-use keccak_const::Shake256;
+use sha3_const::Shake128;
+use sha3_const::Shake256;
 
 #[test]
 fn shake128_empty_string_with_32_byte_output() {

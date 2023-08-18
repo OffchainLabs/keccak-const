@@ -1,9 +1,9 @@
 //! Tests from https://github.com/emn178/js-sha3/blob/master/tests/test.js
 
-use keccak_const::Sha3_224;
-use keccak_const::Sha3_256;
-use keccak_const::Sha3_384;
-use keccak_const::Sha3_512;
+use sha3_const::Sha3_224;
+use sha3_const::Sha3_256;
+use sha3_const::Sha3_384;
+use sha3_const::Sha3_512;
 
 #[test]
 fn sha3_224_empty_string() {

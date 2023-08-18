@@ -1,11 +1,11 @@
 [package]
-name = "keccak-const"
+name = "sha3-const"
 version = "0.2.0"
 edition = "2021"
-authors = ["Andrew Milson <andrew.j.milson@gmail.com>", "Offchain Labs, Inc."]
+authors = ["Andrew Milson <andrew.j.milson@gmail.com>"]
 description = "const fn implementation of the SHA-3 family of hash and extendable-output functions"
-homepage = "https://github.com/OffchainLabs/keccak-const"
-repository = "https://github.com/OffchainLabs/keccak-const"
+homepage = "https://github.com/OffchainLabs/sha3-const"
+repository = "https://github.com/OffchainLabs/sha3-const"
 license = "MIT OR Apache-2.0"
-keywords = ["crypto", "keccak", "sha3", "const", "ethereum"]
+keywords = ["crypto", "keccak", "sha3", "const"]
 categories = ["cryptography", "no-std"]

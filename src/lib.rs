@@ -8,7 +8,7 @@
 //! # Examples
 //!
 //! ```rust
-//! # use keccak_const::Shake256;
+//! # use sha3_const::Shake256;
 //! const PSEUDO_RANDOM_BYTES: [u8; 1000] = Shake256::new()
 //!         .update(b"The quick brown fox ")
 //!         .update(b"jumps over the lazy dog")
@@ -16,7 +16,7 @@
 //! ```
 //!
 //! ```rust
-//! # use keccak_const::Shake128;
+//! # use sha3_const::Shake128;
 //! const ROUND_CONSTANTS: [u128; 8] = {
 //!     let shake = Shake128::new()
 //!         .update(b"The quick brown fox ")
@@ -107,7 +107,7 @@ sha3!(
     /// # Examples
     ///
     /// ```rust
-    /// # use keccak_const::Sha3_224;
+    /// # use sha3_const::Sha3_224;
     /// const DIGEST: [u8; 28] = Sha3_224::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -132,7 +132,7 @@ sha3!(
     /// # Examples
     ///
     /// ```rust
-    /// # use keccak_const::Sha3_256;
+    /// # use sha3_const::Sha3_256;
     /// const DIGEST: [u8; 32] = Sha3_256::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -158,7 +158,7 @@ sha3!(
     /// # Examples
     ///
     /// ```rust
-    /// # use keccak_const::Sha3_384;
+    /// # use sha3_const::Sha3_384;
     /// const DIGEST: [u8; 48] = Sha3_384::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -185,7 +185,7 @@ sha3!(
     /// # Examples
     ///
     /// ```rust
-    /// # use keccak_const::Sha3_512;
+    /// # use sha3_const::Sha3_512;
     /// const DIGEST: [u8; 64] = Sha3_512::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -213,7 +213,7 @@ sha3!(
     /// # Examples
     ///
     /// ```rust
-    /// # use keccak_const::Keccak224;
+    /// # use sha3_const::Keccak224;
     /// const DIGEST: [u8; 28] = Keccak224::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -238,7 +238,7 @@ sha3!(
     /// # Examples
     ///
     /// ```rust
-    /// # use keccak_const::Keccak256;
+    /// # use sha3_const::Keccak256;
     /// const DIGEST: [u8; 32] = Keccak256::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -264,7 +264,7 @@ sha3!(
     /// # Examples
     ///
     /// ```rust
-    /// # use keccak_const::Keccak384;
+    /// # use sha3_const::Keccak384;
     /// const DIGEST: [u8; 48] = Keccak384::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -291,7 +291,7 @@ sha3!(
     /// # Examples
     ///
     /// ```rust
-    /// # use keccak_const::Keccak512;
+    /// # use sha3_const::Keccak512;
     /// const DIGEST: [u8; 64] = Keccak512::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -368,7 +368,7 @@ shake!(
     /// # Examples
     ///
     /// ```rust
-    /// # use keccak_const::Shake128;
+    /// # use sha3_const::Shake128;
     /// const PSEUDO_RANDOM_BYTES: [u8; 32] = Shake128::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -385,7 +385,7 @@ shake!(
     /// ```
     ///
     /// ```rust
-    /// # use keccak_const::Shake128;
+    /// # use sha3_const::Shake128;
     /// const ROUND_CONSTANTS_LEN: usize = 16;
     /// const ROUND_CONSTANTS: [u128; ROUND_CONSTANTS_LEN] = {
     ///     let shake = Shake128::new()
@@ -435,7 +435,7 @@ shake!(
     /// # Examples
     ///
     /// ```rust
-    /// # use keccak_const::Shake256;
+    /// # use sha3_const::Shake256;
     /// const PSEUDO_RANDOM_BYTES: [u8; 64] = Shake256::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -454,7 +454,7 @@ shake!(
     /// ```
     ///
     /// ```rust
-    /// # use keccak_const::Shake256;
+    /// # use sha3_const::Shake256;
     /// const ROUND_CONSTANTS_LEN: usize = 16;
     /// const ROUND_CONSTANTS: [u128; ROUND_CONSTANTS_LEN] = {
     ///     let shake = Shake256::new()
