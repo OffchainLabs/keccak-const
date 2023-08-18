@@ -1,16 +1,14 @@
 //! Tests from https://github.com/emn178/js-sha3/blob/master/tests/test-shake.js
-#![feature(const_mut_refs)]
 
-use sha3_const::Shake128;
-use sha3_const::Shake256;
+use keccak_const::Shake128;
+use keccak_const::Shake256;
 
 #[test]
 fn shake128_empty_string_with_32_byte_output() {
     let hasher = Shake128::new();
-    let mut output = [0; 32];
-    let mut reader = hasher.finalize_xof();
-    reader.read(&mut output[..10]);
-    reader.read(&mut output[10..]);
+    let reader = hasher.finalize_xof();
+    let (reader, start) = reader.read::<10>();
+    let output = combine::<10, 22, 32>(start, reader.read().1);
 
     assert_eq!(
         [
@@ -55,18 +53,15 @@ fn shake128_quick_brown_fox_with_single_byte_output() {
 
 #[test]
 fn shake128_updates() {
-    let mut beginning_output = [0; 32];
-    let mut end_output = [0; 32];
-
     let mut hasher = Shake128::new().update(b"");
-    hasher.finalize_xof().read(&mut beginning_output);
+    let beginning_output = hasher.finalize_xof().read::<32>().1;
     hasher = hasher
         .update(b"The quick ")
         .update(b"brown fox ")
         .update(b"jumps over ")
         .update(b"")
         .update(b"the lazy dog");
-    hasher.finalize_xof().read(&mut end_output);
+    let end_output = hasher.finalize_xof().read().1;
 
     assert_eq!(
         [
@@ -88,10 +83,8 @@ fn shake128_updates() {
 
 #[test]
 fn shake128_with_172_byte_output() {
-    let mut output = [0; 172];
-
     let hasher = Shake128::new().update(b"AAA");
-    hasher.finalize_xof().read(&mut output);
+    let output = hasher.finalize_xof().read().1;
 
     assert_eq!(
         [
@@ -166,7 +159,6 @@ fn shake256_empty_string_with_512_byte_output() {
 
 #[test]
 fn shake256_large_input_with_512_byte_output() {
-    let mut output = [0; 512];
     let hasher = Shake256::new().update(&[
         0x3A, 0x3A, 0x81, 0x9C, 0x48, 0xEF, 0xDE, 0x2A, 0xD9, 0x14, 0xFB, 0xF0, 0x0E, 0x18, 0xAB,
         0x6B, 0xC4, 0xF1, 0x45, 0x13, 0xAB, 0x27, 0xD0, 0xC1, 0x78, 0xA1, 0x88, 0xB6, 0x14, 0x31,
@@ -186,9 +178,9 @@ fn shake256_large_input_with_512_byte_output() {
         0x72, 0xE3, 0x28, 0x80, 0x7C, 0x02, 0xD0, 0x11, 0xFF, 0xBF, 0x33, 0x78, 0x53, 0x78, 0xD7,
         0x9D, 0xC2, 0x66, 0xF6, 0xA5, 0xBE, 0x6B, 0xB0, 0xE4, 0xA9, 0x2E, 0xCE, 0xEB, 0xAE, 0xB1,
     ]);
-    let mut reader = hasher.finalize_xof();
-    reader.read(&mut output[..202]);
-    reader.read(&mut output[202..]);
+    let reader = hasher.finalize_xof();
+    let (reader, start) = reader.read();
+    let output = combine::<202, 310, 512>(start, reader.read().1);
 
     assert_eq!(
         [
@@ -232,4 +224,11 @@ fn shake256_large_input_with_512_byte_output() {
         ],
         output,
     );
+}
+
+fn combine<const N: usize, const M: usize, const S: usize>(a: [u8; N], b: [u8; M]) -> [u8; S] {
+    let mut both = [0; S];
+    both[..N].copy_from_slice(&a);
+    both[N..].copy_from_slice(&b);
+    both
 }

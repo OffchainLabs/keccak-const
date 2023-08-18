@@ -8,7 +8,7 @@
 //! # Examples
 //!
 //! ```rust
-//! # use sha3_const::Shake256;
+//! # use keccak_const::Shake256;
 //! const PSEUDO_RANDOM_BYTES: [u8; 1000] = Shake256::new()
 //!         .update(b"The quick brown fox ")
 //!         .update(b"jumps over the lazy dog")
@@ -16,8 +16,7 @@
 //! ```
 //!
 //! ```rust
-//! #![feature(const_mut_refs)]
-//! # use sha3_const::Shake128;
+//! # use keccak_const::Shake128;
 //! const ROUND_CONSTANTS: [u128; 8] = {
 //!     let shake = Shake128::new()
 //!         .update(b"The quick brown fox ")
@@ -28,8 +27,8 @@
 //!
 //!     let mut i = 0;
 //!     while i < 8 {
-//!         let mut buf = [0; 16];
-//!         reader.read(&mut buf);
+//!         let buf: [u8; 16];
+//!         (reader, buf) = reader.read();
 //!         output[i] = u128::from_be_bytes(buf);
 //!         i += 1;
 //!     }
@@ -52,7 +51,6 @@
 //! );
 //! ```
 
-#![feature(const_mut_refs)]
 #![no_std]
 
 mod keccak;
@@ -89,15 +87,14 @@ macro_rules! sha3 {
             pub const fn update(mut self, input: &[u8]) -> Self {
                 // usee `mut self` instead of `&mut self` because
                 // mutable references are unstable in constants.
-                self.state.update(input);
+                self.state = self.state.update(input);
                 self
             }
 
             /// Pads and squeezes the state to the output
             pub const fn finalize(&self) -> [u8; {$security / 8}] {
-                let mut reader = self.state.finalize();
-                let mut output = [0; {$security / 8}];
-                reader.read(&mut output);
+                let reader = self.state.finalize();
+                let (_, output) = reader.read::<{$security / 8}>();
                 output
             }
         }
@@ -110,7 +107,7 @@ sha3!(
     /// # Examples
     ///
     /// ```rust
-    /// # use sha3_const::Sha3_224;
+    /// # use keccak_const::Sha3_224;
     /// const DIGEST: [u8; 28] = Sha3_224::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -135,7 +132,7 @@ sha3!(
     /// # Examples
     ///
     /// ```rust
-    /// # use sha3_const::Sha3_256;
+    /// # use keccak_const::Sha3_256;
     /// const DIGEST: [u8; 32] = Sha3_256::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -161,7 +158,7 @@ sha3!(
     /// # Examples
     ///
     /// ```rust
-    /// # use sha3_const::Sha3_384;
+    /// # use keccak_const::Sha3_384;
     /// const DIGEST: [u8; 48] = Sha3_384::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -188,7 +185,7 @@ sha3!(
     /// # Examples
     ///
     /// ```rust
-    /// # use sha3_const::Sha3_512;
+    /// # use keccak_const::Sha3_512;
     /// const DIGEST: [u8; 64] = Sha3_512::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -216,7 +213,7 @@ sha3!(
     /// # Examples
     ///
     /// ```rust
-    /// # use sha3_const::Keccak224;
+    /// # use keccak_const::Keccak224;
     /// const DIGEST: [u8; 28] = Keccak224::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -241,7 +238,7 @@ sha3!(
     /// # Examples
     ///
     /// ```rust
-    /// # use sha3_const::Keccak256;
+    /// # use keccak_const::Keccak256;
     /// const DIGEST: [u8; 32] = Keccak256::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -267,7 +264,7 @@ sha3!(
     /// # Examples
     ///
     /// ```rust
-    /// # use sha3_const::Keccak384;
+    /// # use keccak_const::Keccak384;
     /// const DIGEST: [u8; 48] = Keccak384::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -294,7 +291,7 @@ sha3!(
     /// # Examples
     ///
     /// ```rust
-    /// # use sha3_const::Keccak512;
+    /// # use keccak_const::Keccak512;
     /// const DIGEST: [u8; 64] = Keccak512::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -338,9 +335,9 @@ macro_rules! shake {
             ///
             /// Can be called multiple times.
             pub const fn update(mut self, input: &[u8]) -> Self {
-                // usee `mut self` instead of `&mut self` because
+                // use `mut self` instead of `&mut self` because
                 // mutable references are unstable in constants.
-                self.state.update(input);
+                self.state = self.state.update(input);
                 self
             }
 
@@ -351,9 +348,8 @@ macro_rules! shake {
 
             /// Finalizes the context and compute the output
             pub const fn finalize<const N: usize>(&self) -> [u8; N] {
-                let mut reader = self.finalize_xof();
-                let mut output = [0; N];
-                reader.read(&mut output);
+                let reader = self.finalize_xof();
+                let (_, output) = reader.read::<N>();
                 output
             }
         }
@@ -372,7 +368,7 @@ shake!(
     /// # Examples
     ///
     /// ```rust
-    /// # use sha3_const::Shake128;
+    /// # use keccak_const::Shake128;
     /// const PSEUDO_RANDOM_BYTES: [u8; 32] = Shake128::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -389,8 +385,7 @@ shake!(
     /// ```
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
-    /// # use sha3_const::Shake128;
+    /// # use keccak_const::Shake128;
     /// const ROUND_CONSTANTS_LEN: usize = 16;
     /// const ROUND_CONSTANTS: [u128; ROUND_CONSTANTS_LEN] = {
     ///     let shake = Shake128::new()
@@ -400,8 +395,8 @@ shake!(
     ///     let mut output = [0; ROUND_CONSTANTS_LEN];
     ///     let mut i = 0;
     ///     while i < ROUND_CONSTANTS_LEN {
-    ///         let mut buf = [0; 16];
-    ///         reader.read(&mut buf);
+    ///         let buf: [u8; 16];
+    ///         (reader, buf) = reader.read();
     ///         output[i] = u128::from_be_bytes(buf);
     ///         i += 1;
     ///     }
@@ -440,7 +435,7 @@ shake!(
     /// # Examples
     ///
     /// ```rust
-    /// # use sha3_const::Shake256;
+    /// # use keccak_const::Shake256;
     /// const PSEUDO_RANDOM_BYTES: [u8; 64] = Shake256::new()
     ///     .update(b"The quick brown fox ")
     ///     .update(b"jumps over the lazy dog")
@@ -459,8 +454,7 @@ shake!(
     /// ```
     ///
     /// ```rust
-    /// #![feature(const_mut_refs)]
-    /// # use sha3_const::Shake256;
+    /// # use keccak_const::Shake256;
     /// const ROUND_CONSTANTS_LEN: usize = 16;
     /// const ROUND_CONSTANTS: [u128; ROUND_CONSTANTS_LEN] = {
     ///     let shake = Shake256::new()
@@ -470,8 +464,8 @@ shake!(
     ///     let mut output = [0; ROUND_CONSTANTS_LEN];
     ///     let mut i = 0;
     ///     while i < ROUND_CONSTANTS_LEN {
-    ///         let mut buf = [0; 16];
-    ///         reader.read(&mut buf);
+    ///         let buf: [u8; 16];
+    ///         (reader, buf) = reader.read();
     ///         output[i] = u128::from_be_bytes(buf);
     ///         i += 1;
     ///     }

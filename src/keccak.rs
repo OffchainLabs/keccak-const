@@ -16,17 +16,19 @@ pub struct XofReader {
 
 impl XofReader {
     /// Reads output to a buffer
-    pub const fn read(&mut self, buf: &mut [u8]) {
+    pub const fn read<const N: usize>(mut self) -> (Self, [u8; N]) {
         let mut i = 0;
+        let mut buf = [0u8; N];
         while i < buf.len() {
             buf[i] = self.state[self.pos];
             i += 1;
             self.pos += 1;
             if self.pos == self.rate_in_bytes {
-                keccak_f1600(&mut self.state);
+                self.state = keccak_f1600(self.state);
                 self.pos = 0;
             }
         }
+        (self, buf)
     }
 }
 
@@ -51,17 +53,18 @@ impl KeccakState {
     /// Absorbs additional input
     ///
     /// Can be called multiple times
-    pub const fn update(&mut self, input: &[u8]) {
+    pub const fn update(mut self, input: &[u8]) -> Self {
         let mut i = 0;
         while i < input.len() {
             self.state[self.pos] ^= input[i];
             self.pos += 1;
             i += 1;
             if self.pos == self.rate_in_bytes {
-                keccak_f1600(&mut self.state);
+                self.state = keccak_f1600(self.state);
                 self.pos = 0;
             }
         }
+        self
     }
 
     /// Pad and squeeze the state to the output
@@ -76,10 +79,10 @@ impl KeccakState {
         // pad and switch to the squeezing phase
         state[pos] ^= delimiter;
         if delimiter & 0x80 != 0 && pos == rate_in_bytes - 1 {
-            keccak_f1600(&mut state);
+            state = keccak_f1600(state);
         }
         state[rate_in_bytes - 1] ^= 0x80;
-        keccak_f1600(&mut state);
+        state = keccak_f1600(state);
         XofReader {
             state,
             rate_in_bytes,
@@ -88,7 +91,7 @@ impl KeccakState {
     }
 }
 
-const fn keccak_f1600(state: &mut State) {
+const fn keccak_f1600(mut state: State) -> State {
     let mut lanes = [[0; LANE_DIAM]; LANE_DIAM];
     let mut x = 0;
     while x < LANE_DIAM {
@@ -106,8 +109,8 @@ const fn keccak_f1600(state: &mut State) {
         }
         x += 1;
     }
-    keccak_f1600_on_lanes(&mut lanes);
-    *state = [0; STATE_WIDTH];
+    lanes = keccak_f1600_on_lanes(lanes);
+    state = [0; STATE_WIDTH];
     let mut x = 0;
     while x < LANE_DIAM {
         let mut y = 0;
@@ -123,9 +126,10 @@ const fn keccak_f1600(state: &mut State) {
         }
         x += 1;
     }
+    state
 }
 
-const fn keccak_f1600_on_lanes(lanes: &mut Lanes) {
+const fn keccak_f1600_on_lanes(mut lanes: Lanes) -> Lanes {
     let mut r = 1u32; // R
     let mut round = 0;
     while round < 24 {
@@ -192,4 +196,5 @@ const fn keccak_f1600_on_lanes(lanes: &mut Lanes) {
         }
         round += 1;
     }
+    lanes
 }
