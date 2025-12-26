@@ -497,3 +497,182 @@ shake!(
     Shake256,
     256,
 );
+
+macro_rules! cshake {
+    (
+        $(#[$doc:meta])* $name:ident,
+        $security:literal,
+    ) => {
+        $(#[$doc])*
+        pub struct $name {
+            state: KeccakState,
+        }
+
+        impl $name {
+            /// Constructs a new hasher
+            pub const fn new(name: &[u8], custom_string: &[u8]) -> $name {
+                $name {
+                    state: KeccakState::new_custom($security, name, custom_string),
+                }
+            }
+
+            /// Absorbs additional input
+            ///
+            /// Can be called multiple times.
+            pub const fn update(mut self, input: &[u8]) -> Self {
+                // use `mut self` instead of `&mut self` because
+                // mutable references are unstable in constants.
+                self.state = self.state.update(input);
+                self
+            }
+
+            /// Retrieves an extendable-output function (XOF) reader for current hasher instance
+            pub const fn finalize_xof(&self) -> XofReader {
+                self.state.finalize()
+            }
+
+            /// Finalizes the context and compute the output
+            pub const fn finalize<const N: usize>(&self) -> [u8; N] {
+                let reader = self.finalize_xof();
+                let (_, output) = reader.read::<N>();
+                output
+            }
+        }
+    };
+}
+
+cshake!(
+    /// The `cSHAKE128` extendable-output function with explicit domain separation
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use keccak_const::CShake128;
+    /// const PSEUDO_RANDOM_BYTES: [u8; 32] = CShake128::new(b"", b"Email Signature")
+    ///     .update(b"The quick brown fox ")
+    ///     .update(b"jumps over the lazy dog")
+    ///     .finalize();
+    ///
+    /// assert_eq!(
+    ///     [
+    ///         0x99, 0x83, 0xd0, 0x72, 0xc4, 0xfd, 0xdc, 0xd9, 0xb1, 0x17, 0x4e, 0x11, 0xa6, 0x53,
+    ///         0x11, 0xa5, 0xff, 0x5e, 0xc8, 0x22, 0xd2, 0xa9, 0x4a, 0x72, 0x2c, 0x28, 0x61, 0x0d,
+    ///         0x5d, 0x2e, 0xea, 0x16,
+    ///     ],
+    ///     PSEUDO_RANDOM_BYTES,
+    /// );
+    /// ```
+    ///
+    /// ```rust
+    /// # use keccak_const::CShake128;
+    /// const ROUND_CONSTANTS_LEN: usize = 16;
+    /// const ROUND_CONSTANTS: [u128; ROUND_CONSTANTS_LEN] = {
+    ///     let shake = CShake128::new(b"", b"Email Signature")
+    ///         .update(b"The quick brown fox ")
+    ///         .update(b"jumps over the lazy dog");
+    ///     let mut reader = shake.finalize_xof();
+    ///     let mut output = [0; ROUND_CONSTANTS_LEN];
+    ///     let mut i = 0;
+    ///     while i < ROUND_CONSTANTS_LEN {
+    ///         let buf: [u8; 16];
+    ///         (reader, buf) = reader.read();
+    ///         output[i] = u128::from_be_bytes(buf);
+    ///         i += 1;
+    ///     }
+    ///     output
+    /// };
+    ///
+    /// assert_eq!(
+    ///     [
+    ///         204056302077734240240879225809365307813,
+    ///         339445274070730589293852728023313213974,
+    ///         311034419446408954611264450268137939208,
+    ///         169833205514626068102220920404881299347,
+    ///         128779754926350612467392383462135991915,
+    ///         169596822230703494769597829420356525863,
+    ///         338838196030380375062802366596142924088,
+    ///         265015862682257661285131614916376299461,
+    ///         265076480552089556643027922422174729374,
+    ///         250167117179187385998538284585514868340,
+    ///         189998676605234792367838451471032457698,
+    ///         48895371892810347736363246647811124490,
+    ///         223136061692570272601203217511554762399,
+    ///         283232081694859150497502828176157152835,
+    ///         223709651807484560997162663981801935765,
+    ///         6571448238390366486053042731136101175
+    ///     ],
+    ///     ROUND_CONSTANTS,
+    /// );
+    /// ```
+    CShake128,
+    128,
+);
+
+cshake!(
+    /// The `cSHAKE256` extendable-output function
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use keccak_const::CShake256;
+    /// const PSEUDO_RANDOM_BYTES: [u8; 64] = CShake256::new(b"", b"Email Signature")
+    ///     .update(b"The quick brown fox ")
+    ///     .update(b"jumps over the lazy dog")
+    ///     .finalize();
+    ///
+    /// assert_eq!(
+    ///     [
+    ///         0xa0, 0xef, 0x16, 0x20, 0x7f, 0xee, 0x1f, 0x24, 0x10, 0x2b, 0xbf, 0x54, 0x47, 0x8d,
+    ///         0xae, 0xc5, 0xcc, 0x31, 0xee, 0xac, 0xd6, 0xa0, 0xf4, 0x63, 0x6c, 0xa5, 0x7e, 0x69,
+    ///         0xc7, 0x31, 0x8f, 0x5e, 0xd2, 0x1f, 0xa8, 0x83, 0x88, 0x69, 0x49, 0xfa, 0x80, 0x5a,
+    ///         0xb7, 0x9c, 0xeb, 0xca, 0x4f, 0xd1, 0x71, 0xc8, 0x8a, 0x19, 0x50, 0x37, 0x9d, 0x87,
+    ///         0xd4, 0x11, 0xaa, 0x15, 0x62, 0x62, 0xf6, 0x37,
+    ///     ],
+    ///     PSEUDO_RANDOM_BYTES,
+    /// );
+    /// ```
+    ///
+    /// ```rust
+    /// # use keccak_const::CShake256;
+    /// const ROUND_CONSTANTS_LEN: usize = 16;
+    /// const ROUND_CONSTANTS: [u128; ROUND_CONSTANTS_LEN] = {
+    ///     let shake = CShake256::new(b"", b"Email Signature")
+    ///         .update(b"The quick brown fox ")
+    ///         .update(b"jumps over the lazy dog");
+    ///     let mut reader = shake.finalize_xof();
+    ///     let mut output = [0; ROUND_CONSTANTS_LEN];
+    ///     let mut i = 0;
+    ///     while i < ROUND_CONSTANTS_LEN {
+    ///         let buf: [u8; 16];
+    ///         (reader, buf) = reader.read();
+    ///         output[i] = u128::from_be_bytes(buf);
+    ///         i += 1;
+    ///     }
+    ///     output
+    /// };
+    ///
+    /// assert_eq!(
+    ///     [
+    ///         213917887062681311912024144481950215877,
+    ///         271421774593345040501586071538453548894,
+    ///         279302258183366863715994015928312025041,
+    ///         151244023873457861573879094243945018935,
+    ///         46789858736507269204053399607645187198,
+    ///         248640048152571734342586449302509022469,
+    ///         87086772420130548284400646298592643535,
+    ///         199417999797902562945334686535761913572,
+    ///         81962406407140912004770489768959623055,
+    ///         111010449653295045276375386463252108001,
+    ///         162516068383131012052791378781991998144,
+    ///         177189787204746392129035534133259592877,
+    ///         200113111696997708342773515999166260128,
+    ///         331676797110137524588588956973531151341,
+    ///         20637875926079105932508270204733169627,
+    ///         67866115595833730269190197080092801034
+    ///     ],
+    ///     ROUND_CONSTANTS,
+    /// );
+    /// ```
+    CShake256,
+    256,
+);
