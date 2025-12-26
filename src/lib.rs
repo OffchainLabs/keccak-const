@@ -98,6 +98,12 @@ macro_rules! sha3 {
                 output
             }
         }
+
+        impl Default for $name {
+            fn default() -> Self {
+                $name::new()
+            }
+        }
     };
 }
 
