@@ -28,7 +28,7 @@
 //!     let mut i = 0;
 //!     while i < 8 {
 //!         let buf: [u8; 16];
-//!         (reader, buf) = reader.read();
+//!         buf = reader.read();
 //!         output[i] = u128::from_be_bytes(buf);
 //!         i += 1;
 //!     }
@@ -85,17 +85,26 @@ macro_rules! sha3 {
             ///
             /// Can be called multiple times
             pub const fn update(mut self, input: &[u8]) -> Self {
-                // usee `mut self` instead of `&mut self` because
-                // mutable references are unstable in constants.
                 self.state = self.state.update(input);
                 self
             }
 
             /// Pads and squeezes the state to the output
             pub const fn finalize(&self) -> [u8; {$security / 8}] {
-                let reader = self.state.finalize();
-                let (_, output) = reader.read::<{$security / 8}>();
-                output
+                let mut reader = self.state.finalize();
+                reader.read::<{$security / 8}>()
+            }
+
+            /// Pads and squeezes the state to the output
+            pub const fn finalize_into(&self, output: &mut [u8; {$security / 8}]) {
+                let mut reader = self.state.finalize();
+                reader.read_into::<{$security / 8}>(output);
+            }
+        }
+
+        impl Default for $name {
+            fn default() -> Self {
+                $name::new()
             }
         }
 
@@ -341,8 +350,6 @@ macro_rules! shake {
             ///
             /// Can be called multiple times.
             pub const fn update(mut self, input: &[u8]) -> Self {
-                // use `mut self` instead of `&mut self` because
-                // mutable references are unstable in constants.
                 self.state = self.state.update(input);
                 self
             }
@@ -354,9 +361,14 @@ macro_rules! shake {
 
             /// Finalizes the context and compute the output
             pub const fn finalize<const N: usize>(&self) -> [u8; N] {
-                let reader = self.finalize_xof();
-                let (_, output) = reader.read::<N>();
-                output
+                let mut reader = self.finalize_xof();
+                reader.read::<N>()
+            }
+
+            /// Finalizes the context and compute the output
+            pub const fn finalize_into<const N: usize>(&self, output: &mut [u8; N]) {
+                let mut reader = self.finalize_xof();
+                reader.read_into::<N>(output);
             }
         }
 
@@ -402,7 +414,7 @@ shake!(
     ///     let mut i = 0;
     ///     while i < ROUND_CONSTANTS_LEN {
     ///         let buf: [u8; 16];
-    ///         (reader, buf) = reader.read();
+    ///         buf = reader.read();
     ///         output[i] = u128::from_be_bytes(buf);
     ///         i += 1;
     ///     }
@@ -471,7 +483,7 @@ shake!(
     ///     let mut i = 0;
     ///     while i < ROUND_CONSTANTS_LEN {
     ///         let buf: [u8; 16];
-    ///         (reader, buf) = reader.read();
+    ///         buf = reader.read();
     ///         output[i] = u128::from_be_bytes(buf);
     ///         i += 1;
     ///     }
@@ -526,8 +538,6 @@ macro_rules! cshake {
             ///
             /// Can be called multiple times.
             pub const fn update(mut self, input: &[u8]) -> Self {
-                // use `mut self` instead of `&mut self` because
-                // mutable references are unstable in constants.
                 self.state = self.state.update(input);
                 self
             }
@@ -539,9 +549,14 @@ macro_rules! cshake {
 
             /// Finalizes the context and compute the output
             pub const fn finalize<const N: usize>(&self) -> [u8; N] {
-                let reader = self.finalize_xof();
-                let (_, output) = reader.read::<N>();
-                output
+                let mut reader = self.finalize_xof();
+                reader.read::<N>()
+            }
+
+            /// Finalizes the context and compute the output
+            pub const fn finalize_into<const N: usize>(&self, output: &mut [u8; N]) {
+                let mut reader = self.finalize_xof();
+                reader.read_into::<N>(output);
             }
         }
     };
@@ -581,7 +596,7 @@ cshake!(
     ///     let mut i = 0;
     ///     while i < ROUND_CONSTANTS_LEN {
     ///         let buf: [u8; 16];
-    ///         (reader, buf) = reader.read();
+    ///         buf = reader.read();
     ///         output[i] = u128::from_be_bytes(buf);
     ///         i += 1;
     ///     }
@@ -650,7 +665,7 @@ cshake!(
     ///     let mut i = 0;
     ///     while i < ROUND_CONSTANTS_LEN {
     ///         let buf: [u8; 16];
-    ///         (reader, buf) = reader.read();
+    ///         buf = reader.read();
     ///         output[i] = u128::from_be_bytes(buf);
     ///         i += 1;
     ///     }
