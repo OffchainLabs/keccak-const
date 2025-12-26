@@ -101,6 +101,12 @@ macro_rules! sha3 {
                 reader.read_into::<{$security / 8}>(output);
             }
         }
+
+        impl Default for $name {
+            fn default() -> Self {
+                $name::new()
+            }
+        }
     };
 }
 
