@@ -35,6 +35,20 @@ impl XofReader {
         }
         self
     }
+    /// Reads output to a buffer
+    pub const fn read_into_slice<const N: usize>(&mut self, output: &mut [u8]) -> &mut Self {
+        let mut i = 0;
+        while i < N {
+            output[i] = self.state[self.pos];
+            i += 1;
+            self.pos += 1;
+            if self.pos == self.rate_in_bytes {
+                self.state = keccak_f1600(self.state);
+                self.pos = 0;
+            }
+        }
+        self
+    }
 }
 
 #[derive(Clone)]

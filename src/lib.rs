@@ -100,6 +100,12 @@ macro_rules! sha3 {
                 let mut reader = self.state.finalize();
                 reader.read_into::<{$security / 8}>(output);
             }
+
+            /// Pads and squeezes the state to the output
+            pub const fn finalize_into_slice(&self, output: &mut [u8]) {
+                let mut reader = self.state.finalize();
+                reader.read_into_slice::<{$security / 8}>(output);
+            }
         }
 
         impl Default for $name {
@@ -364,6 +370,12 @@ macro_rules! shake {
                 let mut reader = self.finalize_xof();
                 reader.read_into::<N>(output);
             }
+
+            /// Finalizes the context and compute the output
+            pub const fn finalize_into_slice<const N: usize>(&self, output: &mut [u8]) {
+                let mut reader = self.finalize_xof();
+                reader.read_into_slice::<N>(output);
+            }
         }
 
         impl Default for $name {
@@ -551,6 +563,12 @@ macro_rules! cshake {
             pub const fn finalize_into<const N: usize>(&self, output: &mut [u8; N]) {
                 let mut reader = self.finalize_xof();
                 reader.read_into::<N>(output);
+            }
+
+            /// Finalizes the context and compute the output
+            pub const fn finalize_into_slice<const N: usize>(&self, output: &mut [u8]) {
+                let mut reader = self.finalize_xof();
+                reader.read_into_slice::<N>(output);
             }
         }
     };
