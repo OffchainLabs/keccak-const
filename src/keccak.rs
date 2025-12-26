@@ -16,11 +16,16 @@ pub struct XofReader {
 
 impl XofReader {
     /// Reads output to a buffer
-    pub const fn read<const N: usize>(mut self) -> (Self, [u8; N]) {
+    pub const fn read<const N: usize>(&mut self) -> [u8; N] {
+        let mut buf = [0; N];
+        let _ = self.read_into(&mut buf);
+        buf
+    }
+    /// Reads output to a buffer
+    pub const fn read_into<const N: usize>(&mut self, output: &mut [u8; N]) -> &mut Self {
         let mut i = 0;
-        let mut buf = [0u8; N];
-        while i < buf.len() {
-            buf[i] = self.state[self.pos];
+        while i < N {
+            output[i] = self.state[self.pos];
             i += 1;
             self.pos += 1;
             if self.pos == self.rate_in_bytes {
@@ -28,7 +33,7 @@ impl XofReader {
                 self.pos = 0;
             }
         }
-        (self, buf)
+        self
     }
 }
 
