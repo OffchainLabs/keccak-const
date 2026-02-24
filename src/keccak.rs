@@ -86,6 +86,14 @@ impl KeccakState {
         state = state.update(custom_string);
         state.fill_block()
     }
+    pub const fn new_kmac(security_bits: usize, key: &[u8], custom_string: &[u8]) -> KeccakState {
+        let mut state = KeccakState::new_custom(security_bits, b"KMAC", custom_string);
+        let rate = state.rate_in_bytes as u64;
+        state = state.update_left_encoded(rate);
+        state = state.update_left_encoded((key.len() * 8) as u64);
+        state = state.update(key);
+        state.fill_block()
+    }
 
     /// Absorbs additional input
     ///
@@ -126,6 +134,26 @@ impl KeccakState {
             self = self.update_byte(input[n]);
             n += 1;
         }
+        self
+    }
+
+    pub const fn update_right_encoded(mut self, value: u64) -> Self {
+        // the input is the value as big endian without leading zeros,
+        // followed by the count of those bytes.
+        let input = value.to_be_bytes();
+        // count leading zeros
+        let mut n = 0;
+        while n < 8 && input[n] == 0 {
+            n += 1;
+        }
+        n = if n == 8 { 1 } else { 8 - n };
+
+        let mut i = 8 - n;
+        while i < 8 {
+            self = self.update_byte(input[i]);
+            i += 1;
+        }
+        self = self.update_byte(n as u8);
         self
     }
 

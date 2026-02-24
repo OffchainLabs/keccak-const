@@ -709,3 +709,110 @@ cshake!(
     CShake256,
     256,
 );
+
+macro_rules! kmac {
+    (
+        $(#[$doc:meta])* $name:ident,
+        $security:literal,
+    ) => {
+        $(#[$doc])*
+        pub struct $name {
+            state: KeccakState,
+        }
+
+        impl $name {
+            /// Constructs a new hasher
+            pub const fn new(name: &[u8], custom_string: &[u8]) -> $name {
+                $name {
+                    state: KeccakState::new_kmac($security, name, custom_string),
+                }
+            }
+
+            /// Absorbs additional input
+            ///
+            /// Can be called multiple times.
+            pub const fn update(mut self, input: &[u8]) -> Self {
+                self.state = self.state.update(input);
+                self
+            }
+
+            /// Retrieves an extendable-output function (XOF) reader for current hasher instance
+            const fn finalize_xof(&self) -> XofReader {
+                self.state.finalize()
+            }
+
+            /// Finalizes the context and compute the output
+            pub const fn finalize<const N: usize>(mut self) -> [u8; N] {
+                self.state = self.state.update_right_encoded(N as u64 * 8);
+                let mut reader = self.finalize_xof();
+                reader.read::<N>()
+            }
+
+            /// Finalizes the context and compute the output
+            pub const fn finalize_into<const N: usize>(mut self, output: &mut [u8; N]) {
+                self.state = self.state.update_right_encoded(N as u64 * 8);
+                let mut reader = self.finalize_xof();
+                reader.read_into::<N>(output);
+            }
+
+            /// Finalizes the context and compute the output
+            pub const fn finalize_into_slice<const N: usize>(mut self, output: &mut [u8]) {
+                self.state = self.state.update_right_encoded(N as u64 * 8);
+                let mut reader = self.finalize_xof();
+                reader.read_into_slice::<N>(output);
+            }
+        }
+    };
+}
+
+kmac!(
+    /// The `KMAC128` keyed hash function
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use keccak_const::KMac128;
+    /// const MAC_BYTES: [u8; 32] = KMac128::new(b"key", b"")
+    ///     .update(b"The quick brown fox ")
+    ///     .update(b"jumps over the lazy dog")
+    ///     .finalize();
+    ///
+    /// assert_eq!(
+    ///     [
+    ///         0x1e, 0xe8, 0x4a, 0x8a, 0xf8, 0xce, 0x51, 0xb2, 0x7f, 0x70, 0x13, 0xf8, 0x64, 0x52,
+    ///         0x7f, 0x37, 0xaf, 0x4d, 0x55, 0x63, 0xd1, 0x71, 0xde, 0xc7, 0x3f, 0xc2, 0x5f, 0x98,
+    ///         0xf4, 0x78, 0x52, 0x60,
+    ///     ],
+    ///     MAC_BYTES,
+    /// );
+    /// ```
+    KMac128,
+    128,
+);
+
+kmac!(
+    /// The `KMAC256` keyed hash function
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use keccak_const::KMac256;
+    /// const MAC_BYTES: [u8; 64] = KMac256::new(b"key", b"")
+    ///     .update(b"The quick brown fox ")
+    ///     .update(b"jumps over the lazy dog")
+    ///     .finalize();
+    ///
+    /// assert_eq!(
+    ///     [
+    ///         0x55, 0x41, 0x24, 0x0f, 0x34, 0x1f, 0x67, 0xfb, 0x1a, 0x9c, 0xb7, 0x9c, 0xc8, 0xe4,
+    ///         0xab, 0x77, 0xed, 0x90, 0x5e, 0x24, 0x8d, 0x01, 0x43, 0xa1, 0x32, 0x74, 0xb3, 0x55,
+    ///         0xfc, 0xb6, 0xdb, 0x27, 0xe9, 0x3c, 0x9e, 0xe7, 0xdc, 0x2f, 0x89, 0x9a, 0x3f, 0x08,
+    ///         0xf5, 0x54, 0xde, 0xce, 0x8c, 0x01, 0x01, 0xaa, 0x41, 0xa5, 0x1a, 0x1e, 0xaf, 0x33,
+    ///         0x1b, 0x81, 0xab, 0xea, 0xf4, 0x43, 0x67, 0x96,
+    ///     ],
+    ///     MAC_BYTES,
+    /// );
+    /// ```
+    KMac256,
+    256,
+);
