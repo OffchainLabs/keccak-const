@@ -16,11 +16,16 @@ pub struct XofReader {
 
 impl XofReader {
     /// Reads output to a buffer
-    pub const fn read<const N: usize>(mut self) -> (Self, [u8; N]) {
+    pub const fn read<const N: usize>(&mut self) -> [u8; N] {
+        let mut buf = [0; N];
+        let _ = self.read_into(&mut buf);
+        buf
+    }
+    /// Reads output to a buffer
+    pub const fn read_into<const N: usize>(&mut self, output: &mut [u8; N]) -> &mut Self {
         let mut i = 0;
-        let mut buf = [0u8; N];
-        while i < buf.len() {
-            buf[i] = self.state[self.pos];
+        while i < N {
+            output[i] = self.state[self.pos];
             i += 1;
             self.pos += 1;
             if self.pos == self.rate_in_bytes {
@@ -28,7 +33,21 @@ impl XofReader {
                 self.pos = 0;
             }
         }
-        (self, buf)
+        self
+    }
+    /// Reads output to a buffer
+    pub const fn read_into_slice<const N: usize>(&mut self, output: &mut [u8]) -> &mut Self {
+        let mut i = 0;
+        while i < N {
+            output[i] = self.state[self.pos];
+            i += 1;
+            self.pos += 1;
+            if self.pos == self.rate_in_bytes {
+                self.state = keccak_f1600(self.state);
+                self.pos = 0;
+            }
+        }
+        self
     }
 }
 
@@ -49,6 +68,32 @@ impl KeccakState {
             pos: 0,
         }
     }
+    pub const fn new_custom(
+        security_bits: usize,
+        name: &[u8],
+        custom_string: &[u8],
+    ) -> KeccakState {
+        if name.is_empty() && custom_string.is_empty() {
+            // regular shake if both inputs are empty
+            return KeccakState::new(security_bits, 0x1f);
+        }
+        let mut state = KeccakState::new(security_bits, 0x04);
+        let rate = state.rate_in_bytes as u64;
+        state = state.update_left_encoded(rate);
+        state = state.update_left_encoded((name.len() * 8) as u64);
+        state = state.update(name);
+        state = state.update_left_encoded((custom_string.len() * 8) as u64);
+        state = state.update(custom_string);
+        state.fill_block()
+    }
+    pub const fn new_kmac(security_bits: usize, key: &[u8], custom_string: &[u8]) -> KeccakState {
+        let mut state = KeccakState::new_custom(security_bits, b"KMAC", custom_string);
+        let rate = state.rate_in_bytes as u64;
+        state = state.update_left_encoded(rate);
+        state = state.update_left_encoded((key.len() * 8) as u64);
+        state = state.update(key);
+        state.fill_block()
+    }
 
     /// Absorbs additional input
     ///
@@ -56,13 +101,66 @@ impl KeccakState {
     pub const fn update(mut self, input: &[u8]) -> Self {
         let mut i = 0;
         while i < input.len() {
-            self.state[self.pos] ^= input[i];
-            self.pos += 1;
+            self = self.update_byte(input[i]);
             i += 1;
-            if self.pos == self.rate_in_bytes {
-                self.state = keccak_f1600(self.state);
-                self.pos = 0;
-            }
+        }
+        self
+    }
+
+    #[inline(always)]
+    const fn update_byte(mut self, b: u8) -> Self {
+        self.state[self.pos] ^= b;
+        self.pos += 1;
+        if self.pos == self.rate_in_bytes {
+            self.state = keccak_f1600(self.state);
+            self.pos = 0;
+        }
+        self
+    }
+
+    const fn update_left_encoded(mut self, value: u64) -> Self {
+        // the input is the value as big endian without leading zeros,
+        // preceded by the count of those bytes.
+        let input = value.to_be_bytes();
+        // count leading zeros
+        let mut n = 0;
+        while n < 8 && input[n] == 0 {
+            n += 1;
+        }
+        n = if n == 8 { 1 } else { 8 - n };
+        self = self.update_byte(n as u8);
+        n = 8 - n;
+        while n < 8 {
+            self = self.update_byte(input[n]);
+            n += 1;
+        }
+        self
+    }
+
+    pub const fn update_right_encoded(mut self, value: u64) -> Self {
+        // the input is the value as big endian without leading zeros,
+        // followed by the count of those bytes.
+        let input = value.to_be_bytes();
+        // count leading zeros
+        let mut n = 0;
+        while n < 8 && input[n] == 0 {
+            n += 1;
+        }
+        n = if n == 8 { 1 } else { 8 - n };
+
+        let mut i = 8 - n;
+        while i < 8 {
+            self = self.update_byte(input[i]);
+            i += 1;
+        }
+        self = self.update_byte(n as u8);
+        self
+    }
+
+    const fn fill_block(mut self) -> Self {
+        if self.pos != 0 {
+            self.state = keccak_f1600(self.state);
+            self.pos = 0;
         }
         self
     }
